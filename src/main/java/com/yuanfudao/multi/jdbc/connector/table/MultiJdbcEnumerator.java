@@ -35,6 +35,7 @@ import com.yuanfudao.multi.jdbc.connector.options.MultiJdbcReadOptions;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -74,6 +75,7 @@ public class MultiJdbcEnumerator
     private final AtomicInteger jdbcUrlCounter = new AtomicInteger(0);
     private final AtomicInteger totalSchemaCounter = new AtomicInteger(0);
     private final AtomicInteger totalTableCounter = new AtomicInteger(0);
+    private final AtomicInteger queryCounter = new AtomicInteger(0);
 
     public MultiJdbcEnumerator(
             MultiJdbcOptions options,
@@ -252,51 +254,70 @@ public class MultiJdbcEnumerator
                                 readOptions.getPartitionColumnName().get(),
                                 readOptions.getPartitionColumnName().get(),
                                 table));
-        long max = Long.MAX_VALUE;
-        long min = Long.MIN_VALUE;
+        BigInteger max = new BigInteger("0");
+        BigInteger min = new BigInteger("0");
         while (maxMinRes.next()) {
             // just return if there is no data in the table
             if (maxMinRes.getString(1) == null || maxMinRes.getString(2) == null) {
                 return;
             }
-            max = Long.parseLong(maxMinRes.getString(1));
-            min = Long.parseLong(maxMinRes.getString(2));
+            max = new BigInteger(maxMinRes.getString(1));
+            min = new BigInteger(maxMinRes.getString(2));
         }
-        long step = 100000L;
+        BigInteger step;
         if (readOptions.getBatchSize() != null && !readOptions.getNumPartitions().isPresent()) {
             // get count
             ResultSet countRes = stmt.executeQuery(String.format(SELECT_COUNT, table));
-            long count = 0L;
+            long count = 0;
             while (countRes.next()) {
                 count = Long.parseLong(countRes.getString(1));
             }
-            step = (max - min) * readOptions.getBatchSize() / count;
+            // 这里如果count比分片小会引起step 超大溢出的问题，所以要判断一下
+            if (readOptions.getBatchSize() > count) {
+                step = max.add(min.negate());
+            } else {
+                step =
+                        max.add(min.negate())
+                                .multiply(
+                                        new BigInteger(String.valueOf(readOptions.getBatchSize())))
+                                .divide(new BigInteger(String.valueOf(count)));
+            }
         } else if (readOptions.getBatchSize() == null
                 && readOptions.getNumPartitions().isPresent()) {
-            step = (max - min) / (readOptions.getNumPartitions().get());
+            step =
+                    max.add(min.negate())
+                            .divide(
+                                    new BigInteger(
+                                            String.valueOf(
+                                                    String.valueOf(
+                                                            readOptions
+                                                                    .getNumPartitions()
+                                                                    .get()))));
         } else {
             throw new RuntimeException("neither batch size or partition num is null");
         }
         final JdbcDialect dialect = options.getDialect();
-        while (min <= max) {
+        while (min.compareTo(max) <= 0) {
             String query = getSelectFromStatement(db, table, columns, new String[0], dialect);
-            // TODO 这里的%d是指整形，不会超过32位的整形就出问题？
             query +=
                     " WHERE "
                             + dialect.quoteIdentifier(readOptions.getPartitionColumnName().get())
-                            + " BETWEEN %d AND %d";
-            query = String.format(query, min, min + step);
+                            + " BETWEEN %s AND %s";
+            query = String.format(query, min, min.add(step));
             if (options.getUsername().isPresent() && options.getPassword().isPresent()) {
                 splitsQueue.addLast(
                         new MultiJdbcPartitionSplit(
                                 query,
                                 url,
                                 options.getUsername().get(),
-                                options.getPassword().get()));
+                                options.getPassword().get(),
+                                queryCounter.get()));
             } else {
-                splitsQueue.addLast(new MultiJdbcPartitionSplit(query, url, null, null));
+                splitsQueue.addLast(
+                        new MultiJdbcPartitionSplit(query, url, null, null, queryCounter.get()));
             }
-            min = min + step + 1;
+            min = min.add(step).add(new BigInteger("1"));
+            queryCounter.incrementAndGet();
         }
     }
 

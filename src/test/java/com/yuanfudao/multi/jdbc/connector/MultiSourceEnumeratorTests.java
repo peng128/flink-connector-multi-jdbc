@@ -113,50 +113,58 @@ public class MultiSourceEnumeratorTests extends AbstractTestBase {
                         "SELECT id, context FROM APP.JDBCSOURCE_1 WHERE id BETWEEN 1 AND 2",
                         DB_URL_1,
                         null,
-                        null));
+                        null,
+                        0));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_1 WHERE id BETWEEN 3 AND 4",
                         DB_URL_1,
                         null,
-                        null));
+                        null,
+                        1));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_2 WHERE id BETWEEN 4 AND 5",
                         DB_URL_1,
                         null,
-                        null));
+                        null,
+                        2));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_2 WHERE id BETWEEN 6 AND 7",
                         DB_URL_1,
                         null,
-                        null));
+                        null,
+                        3));
 
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_1 WHERE id BETWEEN 1 AND 2",
                         DB_URL_2,
                         null,
-                        null));
+                        null,
+                        4));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_1 WHERE id BETWEEN 3 AND 4",
                         DB_URL_2,
                         null,
-                        null));
+                        null,
+                        5));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_2 WHERE id BETWEEN 4 AND 5",
                         DB_URL_2,
                         null,
-                        null));
+                        null,
+                        6));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_2 WHERE id BETWEEN 6 AND 7",
                         DB_URL_2,
                         null,
-                        null));
+                        null,
+                        7));
         Assert.assertEquals(except.size(), deque.size());
         while (!except.isEmpty()) {
             Assert.assertEquals(except.removeLast(), deque.removeLast());
@@ -191,50 +199,58 @@ public class MultiSourceEnumeratorTests extends AbstractTestBase {
                         "SELECT id, context FROM APP.JDBCSOURCE_1 WHERE id BETWEEN 1 AND 2",
                         DB_URL_1,
                         null,
-                        null));
+                        null,
+                        0));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_1 WHERE id BETWEEN 3 AND 4",
                         DB_URL_1,
                         null,
-                        null));
+                        null,
+                        1));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_2 WHERE id BETWEEN 4 AND 5",
                         DB_URL_1,
                         null,
-                        null));
+                        null,
+                        2));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_2 WHERE id BETWEEN 6 AND 7",
                         DB_URL_1,
                         null,
-                        null));
+                        null,
+                        3));
 
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_1 WHERE id BETWEEN 1 AND 2",
                         DB_URL_2,
                         null,
-                        null));
+                        null,
+                        4));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_1 WHERE id BETWEEN 3 AND 4",
                         DB_URL_2,
                         null,
-                        null));
+                        null,
+                        5));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_2 WHERE id BETWEEN 4 AND 5",
                         DB_URL_2,
                         null,
-                        null));
+                        null,
+                        6));
         except.addLast(
                 new MultiJdbcPartitionSplit(
                         "SELECT id, context FROM APP.JDBCSOURCE_2 WHERE id BETWEEN 6 AND 7",
                         DB_URL_2,
                         null,
-                        null));
+                        null,
+                        7));
         Assert.assertEquals(except.size(), deque.size());
         while (!except.isEmpty()) {
             Assert.assertEquals(except.removeLast(), deque.removeLast());

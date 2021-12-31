@@ -36,11 +36,14 @@ public class MultiJdbcPartitionSplit implements SourceSplit, Serializable {
 
     private final String password;
 
-    public MultiJdbcPartitionSplit(String query, String jdbcUrl, String username, String password) {
+    private final Integer uid;
+
+    public MultiJdbcPartitionSplit(String query, String jdbcUrl, String username, String password, Integer uid) {
         this.query = query;
         this.jdbcUrl = jdbcUrl;
         this.username = username;
         this.password = password;
+        this.uid = uid;
     }
 
     public String getQuery() {
@@ -66,7 +69,7 @@ public class MultiJdbcPartitionSplit implements SourceSplit, Serializable {
      */
     @Override
     public String splitId() {
-        return query;
+        return uid.toString();
     }
 
     @Override
@@ -81,12 +84,13 @@ public class MultiJdbcPartitionSplit implements SourceSplit, Serializable {
         return Objects.equals(query, split.query)
                 && Objects.equals(jdbcUrl, split.jdbcUrl)
                 && Objects.equals(username, split.username)
-                && Objects.equals(password, split.password);
+                && Objects.equals(password, split.password)
+                && Objects.equals(uid, split.uid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(query, jdbcUrl, username, password);
+        return Objects.hash(query, jdbcUrl, username, password, uid);
     }
 
     @Override
@@ -104,6 +108,8 @@ public class MultiJdbcPartitionSplit implements SourceSplit, Serializable {
                 + ", password='"
                 + password
                 + '\''
+                + ", uid="
+                + uid
                 + '}';
     }
 }

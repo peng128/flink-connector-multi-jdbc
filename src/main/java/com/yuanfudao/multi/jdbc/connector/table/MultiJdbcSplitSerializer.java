@@ -41,6 +41,7 @@ public class MultiJdbcSplitSerializer
     public byte[] serialize(MultiJdbcPartitionSplit split) throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 DataOutputStream out = new DataOutputStream(baos)) {
+            out.writeUTF(split.splitId());
             out.writeUTF(split.getQuery());
             out.writeUTF(split.getJdbcUrl());
             if (split.getUsername() != null && split.getPassword() != null) {
@@ -59,6 +60,7 @@ public class MultiJdbcSplitSerializer
     public MultiJdbcPartitionSplit deserialize(int version, byte[] serialized) throws IOException {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(serialized);
                 DataInputStream in = new DataInputStream(bais)) {
+            String uid = in.readUTF();
             String query = in.readUTF();
             String jdbcUrl = in.readUTF();
             String security = in.readUTF();
@@ -68,7 +70,7 @@ public class MultiJdbcSplitSerializer
                 username = in.readUTF();
                 password = in.readUTF();
             }
-            return new MultiJdbcPartitionSplit(query, jdbcUrl, username, password);
+            return new MultiJdbcPartitionSplit(query, jdbcUrl, username, password, Integer.parseInt(uid));
         }
     }
 }

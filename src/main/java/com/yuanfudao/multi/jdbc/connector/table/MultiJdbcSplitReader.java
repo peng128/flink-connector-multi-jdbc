@@ -113,6 +113,7 @@ public class MultiJdbcSplitReader
         } else {
             inputFormatReader.closeInputFormat();
             inputFormatReader.close();
+            inputFormatReader = null;
             return JdbcRowDataRecord.finishSplit(currentSplitId);
         }
     }
